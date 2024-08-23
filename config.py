@@ -6,9 +6,9 @@ from urllib.parse import quote
 class Config(object):
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'secret-key'
 
-    BLOB_ACCOUNT = os.environ.get('BLOB_ACCOUNT') or 'ENTER_STORAGE_ACCOUNT_NAME'
-    BLOB_STORAGE_KEY = os.environ.get('BLOB_STORAGE_KEY') or 'ENTER_BLOB_STORAGE_KEY'
-    BLOB_CONTAINER = os.environ.get('BLOB_CONTAINER') or 'ENTER_IMAGES_CONTAINER_NAME'
+    BLOB_ACCOUNT = os.environ.get('BLOB_ACCOUNT') or 'storagetestudacity'
+    BLOB_STORAGE_KEY = os.environ.get('BLOB_STORAGE_KEY') or '/Tfx5WXyO6f3bqS9THOZjbC1NBnUs0E+/JpPECRoLcMoFaUuUCLxTEvkmLm1E/PzDprft2Wzp9qq+ASt46PnbQ=='
+    BLOB_CONTAINER = os.environ.get('BLOB_CONTAINER') or 'container-udacity'
 
     SQL_SERVER = os.environ.get('SQL_SERVER') or 'udacity.database.windows.net'
     SQL_DATABASE = os.environ.get('SQL_DATABASE') or 'udacity'

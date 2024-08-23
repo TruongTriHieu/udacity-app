@@ -9,7 +9,7 @@ from flask import flash
 
 from azure.storage.blob import BlobServiceClient
 
-connection_string = f"DefaultEndpointsProtocol=https;AccountName={app.config['BLOB_ACCOUNT']};AccountKey={app.config['BLOB_STORAGE_KEY']};EndpointSuffix=core.windows.net"
+connection_string = f"DefaultEndpointsProtocol=https;AccountName=storagetestudacity;AccountKey=/Tfx5WXyO6f3bqS9THOZjbC1NBnUs0E+/JpPECRoLcMoFaUuUCLxTEvkmLm1E/PzDprft2Wzp9qq+ASt46PnbQ==;EndpointSuffix=core.windows.net"
 
 blob_service = BlobServiceClient.from_connection_string(connection_string)
 
