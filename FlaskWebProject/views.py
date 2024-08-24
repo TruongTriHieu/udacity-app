@@ -60,20 +60,24 @@ def post(id):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    app.logger.info('Reached login endpoint')  # Log at the beginning of the function
+
     if current_user.is_authenticated:
+        app.logger.info('User already authenticated, redirecting to home')
         return redirect(url_for('home'))
 
     form = LoginForm()
     if form.validate_on_submit():
+        app.logger.info('Form submitted')
+
         user = User.query.filter_by(username=form.username.data).first()
         if user is None or not user.check_password(form.password.data):
             app.logger.warning(f'Login failed for username: {form.username.data} - Invalid credentials')
             flash('Invalid username or password')
             return redirect(url_for('login'))
-        
-        # login successful
+
+        app.logger.info(f'Login successful for username: {form.username.data}')
         login_user(user, remember=form.remember_me.data)
-        app.logger.info(f'Login successful for username: {form.username.data}')  # Log successful login
         
         next_page = request.args.get('next')
         if not next_page or urlparse(next_page).netloc != '':
