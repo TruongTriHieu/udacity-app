@@ -99,6 +99,7 @@ def authorized():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login_view():
+    app.logger.info('Login view accessed')  # Thêm dòng log đơn giản
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -106,6 +107,7 @@ def login_view():
         
         if user and user.check_password(password):
             login_user(user)
+            app.logger.info(f'Login successful for username: {username}')
             return redirect(url_for('home'))
         else:
             app.logger.warning(f'Login failed for username: {username} - Invalid credentials')
