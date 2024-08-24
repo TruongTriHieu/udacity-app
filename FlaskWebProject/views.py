@@ -62,6 +62,7 @@ def post(id):
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('home'))
+
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
@@ -73,11 +74,12 @@ def login():
         if not next_page or urlparse(next_page).netloc != '':
             next_page = url_for('home')
         return redirect(next_page)
+
     session["state"] = str(uuid.uuid4())
     auth_url = _build_auth_url(scopes=Config.SCOPE, state=session["state"])
     return render_template('login.html', title='Sign In', form=form, auth_url=auth_url)
 
-@app.route(Config.REDIRECT_PATH)  # Its absolute URL must match your app's redirect_uri set in AAD
+@app.route(Config.REDIRECT_PATH)  # Đảm bảo rằng REDIRECT_PATH được cấu hình chính xác trong Config
 def authorized():
     if request.args.get('state') != session.get("state"):
         return redirect(url_for("home"))  # No-OP. Goes back to Index page
@@ -85,17 +87,30 @@ def authorized():
         return render_template("auth_error.html", result=request.args)
     if request.args.get('code'):
         cache = _load_cache()
-        # TODO: Acquire a token from a built msal app, along with the appropriate redirect URI
         result = None
         if "error" in result:
             return render_template("auth_error.html", result=result)
         session["user"] = result.get("id_token_claims")
-        # Note: In a real app, we'd use the 'name' property from session["user"] below
-        # Here, we'll use the admin username for anyone who is authenticated by MS
         user = User.query.filter_by(username="admin").first()
         login_user(user)
         _save_cache(cache)
     return redirect(url_for('home'))
+
+@app.route('/login', methods=['GET', 'POST'])
+def login_view():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user = User.query.filter_by(username=username).first()
+        
+        if user and user.check_password(password):
+            login_user(user)
+            return redirect(url_for('home'))
+        else:
+            app.logger.warning(f'Login failed for username: {username} - Invalid credentials')
+            flash('Invalid login attempt', 'warning')
+    
+    return render_template('login.html')
 
 @app.route('/logout')
 def logout():
@@ -124,5 +139,19 @@ def _build_msal_app(cache=None, authority=None):
     return None
 
 def _build_auth_url(authority=None, scopes=None, state=None):
-    # TODO: Return the full Auth Request URL with appropriate Redirect URI
-    return None
+    if authority is None:
+        authority = Config.AUTHORITY
+    if scopes is None:
+        scopes = Config.SCOPE  
+    if state is None:
+        state = str(uuid.uuid4())
+
+    auth_url = f"{authority}/oauth2/v2.0/authorize?" \
+               f"client_id={Config.CLIENT_ID}&" \
+               f"response_type=code&" \
+               f"redirect_uri={url_for('authorized', _external=True)}&" \
+               f"response_mode=query&" \
+               f"scope={' '.join(scopes)}&" \
+               f"state={state}"
+
+    return auth_url
