@@ -67,12 +67,18 @@ def login():
         return redirect(url_for('home'))
 
     form = LoginForm()
+
     if form.validate_on_submit():
-        app.logger.info('Form submitted')
+        app.logger.info('Form submitted')  # Log when form is submitted
 
         user = User.query.filter_by(username=form.username.data).first()
-        if user is None or not user.check_password(form.password.data):
-            app.logger.warning(f'Login failed for username: {form.username.data} - Invalid credentials')
+        if user is None:
+            app.logger.warning(f'Login failed for username: {form.username.data} - User not found')
+            flash('Invalid username or password')
+            return redirect(url_for('login'))
+
+        if not user.check_password(form.password.data):
+            app.logger.warning(f'Login failed for username: {form.username.data} - Incorrect password')
             flash('Invalid username or password')
             return redirect(url_for('login'))
 
@@ -81,9 +87,14 @@ def login():
         
         next_page = request.args.get('next')
         if not next_page or urlparse(next_page).netloc != '':
+            app.logger.info(f'No valid next page found, redirecting to home')
             next_page = url_for('home')
+        else:
+            app.logger.info(f'Redirecting to next page: {next_page}')
+
         return redirect(next_page)
 
+    app.logger.info('Rendering login page')  # Log when rendering the login page
     session["state"] = str(uuid.uuid4())
     auth_url = _build_auth_url(scopes=Config.SCOPE, state=session["state"])
     return render_template('login.html', title='Sign In', form=form, auth_url=auth_url)
