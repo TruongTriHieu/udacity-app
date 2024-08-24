@@ -70,7 +70,11 @@ def login():
             app.logger.warning(f'Login failed for username: {form.username.data} - Invalid credentials')
             flash('Invalid username or password')
             return redirect(url_for('login'))
+        
+        # login successful
         login_user(user, remember=form.remember_me.data)
+        app.logger.info(f'Login successful for username: {form.username.data}')  # Log successful login
+        
         next_page = request.args.get('next')
         if not next_page or urlparse(next_page).netloc != '':
             next_page = url_for('home')
@@ -80,7 +84,7 @@ def login():
     auth_url = _build_auth_url(scopes=Config.SCOPE, state=session["state"])
     return render_template('login.html', title='Sign In', form=form, auth_url=auth_url)
 
-@app.route(Config.REDIRECT_PATH)  # Đảm bảo rằng REDIRECT_PATH được cấu hình chính xác trong Config
+@app.route(Config.REDIRECT_PATH)  
 def authorized():
     if request.args.get('state') != session.get("state"):
         return redirect(url_for("home"))  # No-OP. Goes back to Index page
@@ -99,7 +103,6 @@ def authorized():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login_view():
-    app.logger.info('Login view accessed')  # Thêm dòng log đơn giản
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -107,7 +110,6 @@ def login_view():
         
         if user and user.check_password(password):
             login_user(user)
-            app.logger.info(f'Login successful for username: {username}')
             return redirect(url_for('home'))
         else:
             app.logger.warning(f'Login failed for username: {username} - Invalid credentials')
