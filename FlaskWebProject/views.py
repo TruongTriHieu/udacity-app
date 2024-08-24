@@ -58,43 +58,43 @@ def post(id):
         form=form
     )
 
-@app.route('/login', methods=['GET', 'POST'])
+@@app.route('/login', methods=['GET', 'POST'])
 def login():
-    app.logger.info('Reached login endpoint')  # Log at the beginning of the function
+    app.logger.info('Reached login endpoint', flush=True)
 
     if current_user.is_authenticated:
-        app.logger.info('User already authenticated, redirecting to home')
+        app.logger.info('User already authenticated, redirecting to home', flush=True)
         return redirect(url_for('home'))
 
     form = LoginForm()
 
     if form.validate_on_submit():
-        app.logger.info('Form submitted')  # Log when form is submitted
+        app.logger.info('Form submitted', flush=True)
 
         user = User.query.filter_by(username=form.username.data).first()
         if user is None:
-            app.logger.warning(f'Login failed for username: {form.username.data} - User not found')
+            app.logger.warning(f'Login failed for username: {form.username.data} - User not found', flush=True)
             flash('Invalid username or password')
             return redirect(url_for('login'))
 
         if not user.check_password(form.password.data):
-            app.logger.warning(f'Login failed for username: {form.username.data} - Incorrect password')
+            app.logger.warning(f'Login failed for username: {form.username.data} - Incorrect password', flush=True)
             flash('Invalid username or password')
             return redirect(url_for('login'))
 
-        app.logger.info(f'Login successful for username: {form.username.data}')
+        app.logger.info(f'Login successful for username: {form.username.data}', flush=True)
         login_user(user, remember=form.remember_me.data)
-        
+
         next_page = request.args.get('next')
         if not next_page or urlparse(next_page).netloc != '':
-            app.logger.info(f'No valid next page found, redirecting to home')
+            app.logger.info(f'No valid next page found, redirecting to home', flush=True)
             next_page = url_for('home')
         else:
-            app.logger.info(f'Redirecting to next page: {next_page}')
+            app.logger.info(f'Redirecting to next page: {next_page}', flush=True)
 
         return redirect(next_page)
 
-    app.logger.info('Rendering login page')  # Log when rendering the login page
+    app.logger.info('Rendering login page', flush=True)
     session["state"] = str(uuid.uuid4())
     auth_url = _build_auth_url(scopes=Config.SCOPE, state=session["state"])
     return render_template('login.html', title='Sign In', form=form, auth_url=auth_url)
