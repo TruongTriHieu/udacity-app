@@ -58,7 +58,7 @@ def post(id):
         form=form
     )
 
-@@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     app.logger.info('Reached login endpoint', flush=True)
 
